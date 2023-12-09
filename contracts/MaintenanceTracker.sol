@@ -11,17 +11,19 @@ contract MaintenanceTracker is ERC721, Ownable {
     Counters.Counter private tokenIdCounter;
 
     enum TaskStatus { InProgress, CompletedUnpaid, CompletedPaid }
+    enum ExecutionStatus { None, CompletedByRepairman, CertifiedByQualityInspector }
 
     struct MaintenanceTask {
         string clientName;
         string systemName;
         string maintenanceName;
         uint256 systemCycles;
-        string ipfsHash; // Storing the IPFS hash directly
+        string ipfsHash;
         uint256 estimatedTime;
         uint256 startTime;
         uint256 cost;
-        TaskStatus status;
+        TaskStatus generalStatus;
+        ExecutionStatus executionStatus;
         address repairman;
         address qualityInspector;
     }
@@ -34,7 +36,7 @@ contract MaintenanceTracker is ERC721, Ownable {
     event TaskCompletedPaid(uint256 tokenId, uint256 cost);
     event FundsWithdrawn(uint256 amount);
 
-    constructor(address _tokenContractAddress) ERC721("MaintenanceTracker", "MT") Ownable() {
+    constructor(address _tokenContractAddress) ERC721("MaintenanceTracker", "MT") Ownable(msg.sender) {
         tokenContract = MaintenanceToken(_tokenContractAddress);
     }
 
@@ -49,12 +51,12 @@ contract MaintenanceTracker is ERC721, Ownable {
     }
 
     modifier taskInProgress(uint256 tokenId) {
-        require(maintenanceTasks[tokenId].status == TaskStatus.InProgress, "Task not in progress");
+        require(maintenanceTasks[tokenId].generalStatus == TaskStatus.InProgress, "Task not in progress");
         _;
     }
 
     modifier taskCompletedUnpaid(uint256 tokenId) {
-        require(maintenanceTasks[tokenId].status == TaskStatus.CompletedUnpaid, "Task not completed or already paid");
+        require(maintenanceTasks[tokenId].generalStatus == TaskStatus.CompletedUnpaid, "Task not completed or already paid");
         _;
     }
 
@@ -70,10 +72,10 @@ contract MaintenanceTracker is ERC721, Ownable {
         address _repairman,
         address _qualityInspector
     ) external onlyOwner {
-        uint256 tokenId = tokenIdCounter.current();
+        uint256 newTokenId = tokenIdCounter.current();
         tokenIdCounter.increment();
 
-        maintenanceTasks[tokenId] = MaintenanceTask({
+        maintenanceTasks[newTokenId] = MaintenanceTask({
             clientName: _clientName,
             systemName: _systemName,
             maintenanceName: _maintenanceName,
@@ -82,38 +84,46 @@ contract MaintenanceTracker is ERC721, Ownable {
             estimatedTime: _estimatedTime,
             startTime: _startTime,
             cost: _cost,
-            status: TaskStatus.InProgress,
+            generalStatus: TaskStatus.InProgress,
+            executionStatus: ExecutionStatus.None,
             repairman: _repairman,
             qualityInspector: _qualityInspector
         });
     }
 
-    function certifyTask(uint256 tokenId) external onlyRepairman(tokenId) taskInProgress(tokenId) {
+    function completeTask(uint256 tokenId) external onlyRepairman(tokenId) taskInProgress(tokenId) {
         emit TaskCertified(tokenId, msg.sender);
-        if (msg.sender == maintenanceTasks[tokenId].repairman && msg.sender == maintenanceTasks[tokenId].qualityInspector) {
-            maintenanceTasks[tokenId].status = TaskStatus.CompletedUnpaid;
-        }
+        maintenanceTasks[tokenId].executionStatus = ExecutionStatus.CompletedByRepairman;
+        // The general status remains "InProgress" until payment is made
     }
 
-    function completeTask(uint256 tokenId) external onlyQualityInspector(tokenId) taskInProgress(tokenId) {
+    function certifyTask(uint256 tokenId) external onlyQualityInspector(tokenId) taskInProgress(tokenId) {
         emit TaskCertified(tokenId, msg.sender);
-        if (msg.sender == maintenanceTasks[tokenId].repairman && msg.sender == maintenanceTasks[tokenId].qualityInspector) {
-            maintenanceTasks[tokenId].status = TaskStatus.CompletedUnpaid;
-        }
+        maintenanceTasks[tokenId].executionStatus = ExecutionStatus.CertifiedByQualityInspector;
+        maintenanceTasks[tokenId].generalStatus = TaskStatus.CompletedUnpaid;
     }
 
-    function payForTask(uint256 tokenId) external taskCompletedUnpaid(tokenId) {
-        require(msg.sender == ownerOf(tokenId), "Only the client can pay for the task");
+    function payForTask(uint256 tokenId) external payable taskCompletedUnpaid(tokenId) {
+        // Anyone can pay for the task
 
-        // Assume there is a transfer of tokens from the client to the contract here
-        // Implement your token transfer logic based on your token contract
+        // Ensure that the caller pays at least the specified cost
+        require(msg.value >= maintenanceTasks[tokenId].cost, "Insufficient payment");
 
         // Update task status to "Completed Paid"
-        maintenanceTasks[tokenId].status = TaskStatus.CompletedPaid;
+        maintenanceTasks[tokenId].generalStatus = TaskStatus.CompletedPaid;
 
-        // Mint an NFT certificate for the completed task
+        // Mint an NFT certificate for the completed task and transfer it to the payer
         _safeMint(msg.sender, tokenIdCounter.current());
         tokenIdCounter.increment();
+
+        // Transfer the excess funds back to the payer
+        uint256 excessFunds = msg.value - maintenanceTasks[tokenId].cost;
+        if (excessFunds > 0) {
+            payable(msg.sender).transfer(excessFunds);
+        }
+
+        // Transfer the specified cost to the owner
+        payable(owner()).transfer(maintenanceTasks[tokenId].cost);
 
         emit TaskCompletedPaid(tokenId, maintenanceTasks[tokenId].cost);
     }
@@ -140,4 +150,7 @@ contract MaintenanceTracker is ERC721, Ownable {
         // Combine the base URI and IPFS hash
         return string(abi.encodePacked(baseURI, task.ipfsHash));
     }
+    function viewCertificate(uint256 tokenId) external view returns (string memory) {
+    return tokenURI(tokenId);
+}
 }
