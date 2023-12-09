@@ -45,7 +45,7 @@ async function main() {
 
     //deploying the smart contract using Typechain
     const trackerContractFactory = new MaintenanceTracker__factory(wallet);
-    trackercontract = await trackerContractFactory.deploy(TokenContractAddress);
+    trackercontract = await trackerContractFactory.deploy(TokenContractAddress, 1000000);
     await trackercontract.waitForDeployment();
     const trackerContractAddress = trackercontract.target;
     console.log(`Tracker contract deployed to ${trackerContractAddress}`);

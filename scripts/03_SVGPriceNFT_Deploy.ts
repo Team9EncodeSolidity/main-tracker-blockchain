@@ -1,30 +1,30 @@
 import { ethers } from "hardhat";
 import * as dotenv from "dotenv";
 import { 
-          MaintenanceToken__factory, 
-          MaintenanceToken, 
+          SVGPriceNFT__factory, 
+          SVGPriceNFT, 
         } from "../typechain-types";
 import { getProvider, getWallet } from "./Helpers";
 dotenv.config();
 
-let contract: MaintenanceToken;
-
-const BET_PRICE = 1;
-const BET_FEE = 0.2;
-const TOKEN_RATIO = 1n;
+let contract: SVGPriceNFT;
 
 async function main() {
     console.log(`START\n`);
 
     //receiving parameters
     const parameters = process.argv.slice(2);
-    if (!parameters || parameters.length < 2)
+    if (!parameters || parameters.length < 0)
       throw new Error("Proposals not provided");
-    const TokenContractAddress = parameters[0];
-    const MintGrantedAddress = parameters[1];
+    // const myTokenContractAddress = parameters[0];
 
-    console.log(`MaintenanceToken contract address: ${TokenContractAddress}. `);
-    console.log(`Address that will have mint role over the token: ${MintGrantedAddress}. `);
+    // const proposals = process.argv.slice(3);
+    // console.log("Deploying Ballot contract");
+    // console.log(`MyToken contract address: ${myTokenContractAddress}`);
+    // console.log("Proposals: ");
+    // proposals.forEach((element, index) => {
+    //   console.log(`Proposal N. ${index + 1}: ${element}`);
+    // });
 
     //inspecting data from public blockchains using RPC connections (configuring the provider)
     const provider = getProvider();
@@ -46,11 +46,13 @@ async function main() {
       throw new Error("Not enough ether");
     }
 
-    const contractFactory = new MaintenanceToken__factory(wallet);
-    contract = await contractFactory.attach(TokenContractAddress) as MaintenanceToken;
-    await contract.grantMint(MintGrantedAddress);
+    //deploying the smart contract using Typechain
+    const contractFactory = new SVGPriceNFT__factory(wallet);
+    contract = await contractFactory.deploy();
+    await contract.waitForDeployment();
+    const tokenAddress = contract.target;
 
-    console.log(`Mint granted to ${MintGrantedAddress} over ${TokenContractAddress} token successfuly`);
+    console.log(`Contract deployed to ${tokenAddress}\n`);
     console.log('END');
 }
 

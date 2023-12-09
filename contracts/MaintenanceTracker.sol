@@ -10,6 +10,9 @@ contract MaintenanceTracker is ERC721, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private tokenIdCounter;
 
+    /// @notice Amount of tokens given per ETH paid
+    uint256 public purchaseRatio;
+
     enum TaskStatus { InProgress, CompletedUnpaid, CompletedPaid }
     enum ExecutionStatus { None, CompletedByRepairman, CertifiedByQualityInspector }
 
@@ -36,8 +39,9 @@ contract MaintenanceTracker is ERC721, Ownable {
     event TaskCompletedPaid(uint256 tokenId, uint256 cost);
     event FundsWithdrawn(uint256 amount);
 
-    constructor(address _tokenContractAddress) ERC721("MaintenanceTracker", "MT") Ownable(msg.sender) {
+    constructor(address _tokenContractAddress, uint256 _purchaseRatio) ERC721("MaintenanceTracker", "MT") Ownable() {
         tokenContract = MaintenanceToken(_tokenContractAddress);
+        purchaseRatio = _purchaseRatio;
     }
 
     modifier onlyRepairman(uint256 tokenId) {
@@ -103,11 +107,18 @@ contract MaintenanceTracker is ERC721, Ownable {
         maintenanceTasks[tokenId].generalStatus = TaskStatus.CompletedUnpaid;
     }
 
-    function payForTask(uint256 tokenId) external payable taskCompletedUnpaid(tokenId) {
+    function payForTask(uint256 tokenId, uint256 _amount, string memory _ipfsHash) external taskCompletedUnpaid(tokenId) {
         // Anyone can pay for the task
+        
+        require(bytes(_ipfsHash).length > 0, "IPFS hash needed");  
+
+        uint256 taskCost = maintenanceTasks[tokenId].cost;
 
         // Ensure that the caller pays at least the specified cost
-        require(msg.value >= maintenanceTasks[tokenId].cost, "Insufficient payment");
+        require(_amount >= taskCost, "Insufficient payment");
+
+        // Make sure that the user has approved the contract to spend the required amount of tokens
+        require(tokenContract.allowance(msg.sender, address(this)) >= taskCost, "Token approval required");
 
         // Update task status to "Completed Paid"
         maintenanceTasks[tokenId].generalStatus = TaskStatus.CompletedPaid;
@@ -116,16 +127,11 @@ contract MaintenanceTracker is ERC721, Ownable {
         _safeMint(msg.sender, tokenIdCounter.current());
         tokenIdCounter.increment();
 
-        // Transfer the excess funds back to the payer
-        uint256 excessFunds = msg.value - maintenanceTasks[tokenId].cost;
-        if (excessFunds > 0) {
-            payable(msg.sender).transfer(excessFunds);
-        }
-
         // Transfer the specified cost to the owner
-        payable(owner()).transfer(maintenanceTasks[tokenId].cost);
+        // Before this, the transfer amount needs to be aproved from the backend TokenContract.approve(address spender, uint256 amount)
+        tokenContract.transferFrom(msg.sender, address(this), taskCost);
 
-        emit TaskCompletedPaid(tokenId, maintenanceTasks[tokenId].cost);
+        emit TaskCompletedPaid(tokenId, taskCost);
     }
 
     function withdrawFunds() external onlyOwner {
@@ -151,6 +157,13 @@ contract MaintenanceTracker is ERC721, Ownable {
         return string(abi.encodePacked(baseURI, task.ipfsHash));
     }
     function viewCertificate(uint256 tokenId) external view returns (string memory) {
-    return tokenURI(tokenId);
-}
+        return tokenURI(tokenId);
+    }
+
+    /// @notice Gives tokens based on the amount of ETH sent
+    /// @dev This implementation is prone to rounding problems
+    function buyTokens() external payable {
+        tokenContract.mint(msg.sender, msg.value * purchaseRatio);
+    }
+    
 }
