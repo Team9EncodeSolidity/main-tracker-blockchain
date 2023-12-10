@@ -1,44 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
+// import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+// import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract MaintenanceToken is ERC20, AccessControl {
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+import "@openzeppelin/contracts@v4.9.5/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts@v4.9.5/access/Ownable.sol";
 
-    constructor() ERC20("MaintenanceToken", "MTT") {
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _grantRole(MINTER_ROLE, msg.sender);
-    }
+contract MaintenanceToken is ERC20, Ownable { // OWNABLE
+    constructor() ERC20("MaintenanceToken", "MTT") Ownable() {} // OWNABLE
 
-    function grantMint(address to) public onlyRole(DEFAULT_ADMIN_ROLE) {
-        _grantRole(MINTER_ROLE, to);
-    }
-
-    function mint(address to, uint256 amount) public onlyRole(MINTER_ROLE) {
-        _mint(to, amount);
-    }
-
-    function _afterTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal override(ERC20) {
-        super._afterTokenTransfer(from, to, amount);
-    }
-
-    function _mint(
-        address to,
-        uint256 amount
-    ) internal override(ERC20) {
-        super._mint(to, amount);
-    }
-
-    function _burn(
-        address account,
-        uint256 amount
-    ) internal override(ERC20) {
-        super._burn(account, amount);
+    function mint(address account, uint256 amount) external onlyOwner { // OWNABLE
+        _mint(account, amount);
     }
 }
