@@ -107,11 +107,13 @@ contract MaintenanceTracker is ERC721, Ownable {
         maintenanceTasks[tokenId].generalStatus = TaskStatus.CompletedUnpaid;
     }
 
-    function payForTask(uint256 tokenId, uint256 _amount, string memory _ipfsHash) external taskCompletedUnpaid(tokenId) {
+    function payForTask(uint256 tokenId, uint256 _amount, string memory _metadataIpfsHash, string memory _nftImageIpfsHash) external taskCompletedUnpaid(tokenId) {
         // Anyone can pay for the task
         
-        require(bytes(_ipfsHash).length > 0, "IPFS hash needed");  
+        require(bytes(_metadataIpfsHash).length > 0, "Metadata IPFS hash needed");  
 
+        require(bytes(_nftImageIpfsHash).length > 0, "NFT Image IPFS hash needed");
+        
         uint256 taskCost = maintenanceTasks[tokenId].cost;
 
         // Ensure that the caller pays at least the specified cost
