@@ -41,4 +41,5 @@ contract MaintenanceToken is ERC20, AccessControl {
     ) internal override(ERC20) {
         super._burn(account, amount);
     }
+
 }

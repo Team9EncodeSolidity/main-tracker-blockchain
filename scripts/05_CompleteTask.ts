@@ -1,13 +1,13 @@
 import { ethers } from "hardhat";
 import * as dotenv from "dotenv";
 import { 
-          SVGPriceNFT__factory, 
-          SVGPriceNFT, 
+          MaintenanceTracker__factory, 
+          MaintenanceTracker, 
         } from "../typechain-types";
 import { getProvider, getWallet } from "./Helpers";
 dotenv.config();
 
-let contract: SVGPriceNFT;
+let contract: MaintenanceTracker;
 
 const BET_PRICE = 1;
 const BET_FEE = 0.2;
@@ -18,10 +18,13 @@ async function main() {
 
     //receiving parameters
     const parameters = process.argv.slice(2);
-    if (!parameters || parameters.length < 1)
+    if (!parameters || parameters.length < 2)
       throw new Error("Proposals not provided");
-    
-    let  NFTContractAddress = parameters[0];
+    const TrackerContractAddress = parameters[0];
+    const tokenId = parameters[1];
+
+    console.log(`MaintenanceToken contract address: ${TrackerContractAddress}. `);
+    console.log(`TokenId: ${tokenId}. `);
 
     //inspecting data from public blockchains using RPC connections (configuring the provider)
     const provider = getProvider();
@@ -43,12 +46,11 @@ async function main() {
       throw new Error("Not enough ether");
     }
 
-    const contractFactory = new SVGPriceNFT__factory(wallet);
-    contract = await contractFactory.attach(NFTContractAddress) as SVGPriceNFT;
-    await contract.mint(wallet.address);
+    const contractFactory = new MaintenanceTracker__factory(wallet);
+    contract = await contractFactory.attach(TrackerContractAddress) as MaintenanceTracker;
+    await contract.completeTask(tokenId);
 
-    console.log(`NFT minted to ${wallet.address}`);
-    console.log(`You'll see it here: https://testnets.opensea.io/${wallet.address}`);
+    console.log(`Maintenance task completed for tokenId: ${tokenId} successfully`);
     console.log('END');
 }
 

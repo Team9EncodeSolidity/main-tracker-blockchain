@@ -1,38 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-
-// Importing OpenZeppelin contracts
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
-
-
-// Importing Chainlink contracts
-import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
-
 import "./MaintenanceToken.sol";
 
-contract MaintenanceTracker is ERC721URIStorage, Ownable {
+contract MaintenanceTracker_v1 is ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
-    using Strings for uint256;
+    Counters.Counter private tokenIdCounter;
 
-    Counters.Counter public tokenIdCounter;
-
-    // Create price feed
-    AggregatorV3Interface internal priceFeed;
-    uint256 public lastPrice = 0;
-
-    string public priceIndicator;
-
-/// @notice Amount of tokens given per ETH paid
+    /// @notice Amount of tokens given per ETH paid
     uint256 public purchaseRatio;
 
     enum TaskStatus { InProgress, CompletedUnpaid, CompletedPaid }
     enum ExecutionStatus { None, CompletedByRepairman, CertifiedByQualityInspector }
 
-struct MaintenanceTask {
+    struct MaintenanceTask {
         string clientName;
         string systemName;
         string maintenanceName;
@@ -56,24 +41,9 @@ struct MaintenanceTask {
     event TaskCompletedPaid(uint256 tokenId, uint256 cost);
     event FundsWithdrawn(uint256 amount);
 
-    struct ChainStruct {
-        uint64 code;
-        string name;
-        string color;
-    }
-    mapping (uint256 => ChainStruct) chain;
-
-
-    //https://docs.chain.link/ccip/supported-networks/testnet
     constructor(address _tokenContractAddress, uint256 _purchaseRatio) ERC721("MaintenanceTracker", "MT") Ownable() {
         tokenContract = MaintenanceToken(_tokenContractAddress);
         purchaseRatio = _purchaseRatio;
-
-        //https://docs.chain.link/data-feeds/price-feeds/addresses        
-        priceFeed = AggregatorV3Interface(
-            // Sepolia BTC/USD
-            0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43  
-        );
     }
 
     modifier onlyRepairman(uint256 tokenId) {
@@ -172,8 +142,8 @@ struct MaintenanceTask {
         maintenanceTasks[tokenId].generalStatus = TaskStatus.CompletedPaid;
 
         // Mint an NFT certificate for the completed task and transfer it to the payer
-        mint(msg.sender, tokenId, _ipfsHash, _nftImageIpfsHash);
-        
+        _safeMint(msg.sender, tokenId);
+        updateMetaData(tokenId);
         tokenIdCounter.increment();
 
         // Transfer the specified cost to the owner
@@ -183,85 +153,99 @@ struct MaintenanceTask {
         emit TaskCompletedPaid(tokenId, taskCost);
     }
 
+    // // Update MetaData
+    // function updateMetaData(uint256 tokenId, string memory _ipfsHash, string memory _nftImageIpfsHash) internal {
+    //     MaintenanceTask memory taskData = maintenanceTasks[tokenId];
 
-    function mint(address to, uint256 tokenId, string memory _ipfsHash, string memory _nftImageIpfsHash) public {
-        mintFrom(to, tokenId, _ipfsHash, _nftImageIpfsHash);
-    }
+    //     string memory nftImageURI = _nftImageIpfsHash; // string.concat(_baseURI(), _nftImageIpfsHash);
+    //     string memory externalDataURI = _ipfsHash; // string.concat(_baseURI(), _ipfsHash);
+    //     string memory nftDescription = string.concat("This digital certificate serves as authentic evidence that the specified maintenance operations were performed under specific conditions for: ", taskData.systemName);
+           
+    //     // Base64 encode the SVG
+    //     string memory json = Base64.encode(
+    //         bytes(
+    //             string(
+    //                 abi.encodePacked(
+    //                     '{"name": "Maintenance Certificate",',
+    //                     '"description": "', nftDescription, '",',
+    //                     '"external_url": "', externalDataURI, '",',
+    //                     '"image": "', nftImageURI, '",',
+    //                     '"attributes": [',
+    //                         '{"trait_type": "clientName",',
+    //                         '"value": "', taskData.clientName ,'"},',
+    //                         '{"trait_type": "systemName",',
+    //                         '"value": "', taskData.systemName ,'"},',
+    //                         '{"trait_type": "maintenanceName",',
+    //                         '"value": "', taskData.maintenanceName ,'"},',
+    //                         '{"display_type": "date", ',
+    //                         '"trait_type": "startTime",',
+    //                         '"value": "', taskData.startTime ,'"},',
+    //                         '{"trait_type": "cost",',
+    //                         '"value": "', taskData.cost ,'"},',
+    //                         '{"trait_type": "repairman",',
+    //                         '"value": "', taskData.repairman ,'"},',
+    //                         '{"trait_type": "qualityInspector",',
+    //                         '"value": "', taskData.qualityInspector ,'"},',
+    //                     ']}'
+    //                 )
+    //             )
+    //         )
+    //     );
 
-    function mintFrom(address to, uint256 tokenId, string memory _ipfsHash, string memory _nftImageIpfsHash) internal {
-        // sourceId 0 Sepolia, 1 Fuji, 2 Mumbai
-        // uint256 tokenId = tokenIdCounter.current();
-        _safeMint(to, tokenId);
-        updateMetaData(tokenId, _ipfsHash, _nftImageIpfsHash);    
-        tokenIdCounter.increment();
-    }
+    //     // Create token URI
+    //     string memory finalTokenURI = string(
+    //         abi.encodePacked("data:application/json;base64,", json)
+    //     );
+    //     // Set token URI
+    //     _setTokenURI(tokenId, finalTokenURI);
+    // }
 
     // Update MetaData
-    function updateMetaData(uint256 tokenId, string memory _ipfsHash, string memory _nftImageIpfsHash) internal {
-        MaintenanceTask memory taskData = maintenanceTasks[tokenId];
-
-        string memory json = Base64.encode(
-            bytes(
-                string(
-                    abi.encodePacked(
-                        '{"name": "Maintenance Certificate",',
-                        '"description": "This digital certificate serves as authentic evidence that the specified maintenance operations were performed under specific conditions",',
-                        '"external_url": "', _ipfsHash, '",',
-                        '"image": "', _nftImageIpfsHash, '",',
-                        '"attributes": [',
-                            '{"trait_type": "clientName",',
-                            '"value": "', taskData.clientName ,'"},',
-                            '{"trait_type": "systemName",',
-                            '"value": "', taskData.systemName ,'"}',
-                        ']}'
-                    )
-                )
+    function updateMetaData(uint256 tokenId) internal {
+        // Build dynamic token URI based on parameters
+        string memory json = string(
+            abi.encodePacked(
+                '{"name": "', "Maintenance Certificate", '",',
+                '"description": "', "This digital certificate serves as authentic evidence that the specified maintenance operations were performed under specific conditions", '"',
+                '}'
             )
         );
-        // Create token URI
+
+        // Construct the entire token URI without a specified base URI
         string memory finalTokenURI = string(
-            abi.encodePacked("data:application/json;base64,", json)
+            abi.encodePacked("data:application/json;base64,", Base64.encode(bytes(json)))
         );
+
         // Set token URI
         _setTokenURI(tokenId, finalTokenURI);
     }
 
-    // Compare new price to previous price
-    function comparePrice() public returns (string memory) {
-        uint256 currentPrice = getChainlinkDataFeedLatestAnswer();
-        // if (currentPrice > lastPrice) {
-        //     priceIndicator = priceIndicatorUp;
-        // } else if (currentPrice < lastPrice) {
-        //     priceIndicator = priceIndicatorDown;
-        // } else {
-        //     priceIndicator = priceIndicatorFlat;
-        // }
-        lastPrice = currentPrice;
-        return priceIndicator;
+    function withdrawFunds() external onlyOwner {
+        uint256 totalFunds = address(this).balance;
+        require(totalFunds > 0, "No funds to withdraw");
+
+        // Transfer the funds to the owner
+        payable(owner()).transfer(totalFunds);
+
+        emit FundsWithdrawn(totalFunds);
     }
 
-
-    function getChainlinkDataFeedLatestAnswer() public view returns (uint256) {
-        (, int256 price, , , ) = priceFeed.latestRoundData();
-        return uint256(price);
+    function _baseURI() internal view virtual override returns (string memory) {
+        return "https://ipfs.io/ipfs/";
     }
 
-
-    // The following function is an override required by Solidity.
-    function _burn(uint256 tokenId) internal override(ERC721URIStorage)
-    {
-        super._burn(tokenId);
-    }
-
-
-    function tokenURI(uint256 tokenId)
+    function tokenURI(uint256 tokenId) 
         public view override(ERC721URIStorage) returns (string memory)
     {
-        return super.tokenURI(tokenId);
-    }
+        MaintenanceTask storage task = maintenanceTasks[tokenId];
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721URIStorage) returns (bool) {
-        return super.supportsInterface(interfaceId);
+        string memory baseURI = _baseURI();
+
+        // Combine the base URI and IPFS hash
+        return string(abi.encodePacked(baseURI, task.ipfsHash));
+    }
+    function viewCertificate(uint256 tokenId) external view returns (string memory) {
+        return tokenURI(tokenId);
     }
 
     /// @notice Gives tokens based on the amount of ETH sent

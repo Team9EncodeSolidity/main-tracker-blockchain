@@ -14,9 +14,11 @@ async function main() {
 
     //receiving parameters
     const parameters = process.argv.slice(2);
-    if (!parameters || parameters.length < 0)
+    if (!parameters || parameters.length < 1)
       throw new Error("Proposals not provided");
-    // const myTokenContractAddress = parameters[0];
+    const TokenContractAddress = parameters[0];
+  
+    console.log(`MaintenanceToken contract address: ${TokenContractAddress}. `);
 
     // const proposals = process.argv.slice(3);
     // console.log("Deploying Ballot contract");
@@ -48,7 +50,7 @@ async function main() {
 
     //deploying the smart contract using Typechain
     const contractFactory = new SVGPriceNFT__factory(wallet);
-    contract = await contractFactory.deploy();
+    contract = await contractFactory.deploy(TokenContractAddress, 1000000);
     await contract.waitForDeployment();
     const tokenAddress = contract.target;
 
