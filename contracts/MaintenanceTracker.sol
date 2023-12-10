@@ -174,8 +174,6 @@ struct MaintenanceTask {
         // Mint an NFT certificate for the completed task and transfer it to the payer
         mint(msg.sender, tokenId, _ipfsHash, _nftImageIpfsHash);
         
-        tokenIdCounter.increment();
-
         // Transfer the specified cost to the owner
         // Before this, the transfer amount needs to be aproved from the backend TokenContract.approve(address spender, uint256 amount)
         tokenContract.transferFrom(msg.sender, address(this), taskCost);
@@ -184,7 +182,7 @@ struct MaintenanceTask {
     }
 
 
-    function mint(address to, uint256 tokenId, string memory _ipfsHash, string memory _nftImageIpfsHash) public {
+    function mint(address to, uint256 tokenId, string memory _ipfsHash, string memory _nftImageIpfsHash) internal {
         mintFrom(to, tokenId, _ipfsHash, _nftImageIpfsHash);
     }
 
@@ -193,7 +191,6 @@ struct MaintenanceTask {
         // uint256 tokenId = tokenIdCounter.current();
         _safeMint(to, tokenId);
         updateMetaData(tokenId, _ipfsHash, _nftImageIpfsHash);    
-        tokenIdCounter.increment();
     }
 
     // Update MetaData
