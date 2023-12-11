@@ -48,6 +48,7 @@ struct MaintenanceTask {
     }
 
     mapping(uint256 => MaintenanceTask) public maintenanceTasks;
+    // mapping(uint256 => address) public onProgressTasks;
 
     MaintenanceToken public tokenContract;
 
@@ -182,7 +183,7 @@ struct MaintenanceTask {
     }
 
 
-    function mint(address to, uint256 tokenId, string memory _ipfsHash, string memory _nftImageIpfsHash) internal {
+    function mint(address to, uint256 tokenId, string memory _ipfsHash, string memory _nftImageIpfsHash) public {
         mintFrom(to, tokenId, _ipfsHash, _nftImageIpfsHash);
     }
 
@@ -209,7 +210,9 @@ struct MaintenanceTask {
                             '{"trait_type": "clientName",',
                             '"value": "', taskData.clientName ,'"},',
                             '{"trait_type": "systemName",',
-                            '"value": "', taskData.systemName ,'"}',
+                            '"value": "', taskData.systemName ,'"},',
+                            '{"trait_type": "maintenanceName",',
+                            '"value": "', taskData.maintenanceName ,'"}'
                         ']}'
                     )
                 )

@@ -13,7 +13,7 @@ let contract: MaintenanceTracker;
 // const systemName = "AIRCRAFT";
 const maintenanceName = "ITP";
 const systemCycles = 1000;
-const ipfsHash = "QmaVkBn2tKmjbhphU7eyztbvSQU5EXDdqRyXZtRhSGgJGo";
+const ipfsHash = "ipfs://QmaVkBn2tKmjbhphU7eyztbvSQU5EXDdqRyXZtRhSGgJGo";
 
 const estimatedTime = 3 * 24 * 60 * 60;
 const startingTime = Math.floor(new Date().getTime() / 1000);
