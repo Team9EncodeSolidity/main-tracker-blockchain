@@ -207,7 +207,7 @@ contract MaintenanceTracker is ERC721URIStorage, Ownable {
                     abi.encodePacked(
                         '{"name": "Maintenance Certificate",',
                         '"description": "This digital certificate serves as authentic evidence that the specified maintenance operations were performed under specific conditions",',
-                        '"external_url": "', _ipfsHash, '",',
+                        '"external_url": "', "https://www.encode.club/", '",',
                         '"image": "', _nftImageIpfsHash, '",',
                         '"attributes": [',
                             '{"trait_type": "clientName",',
@@ -283,14 +283,16 @@ contract MaintenanceTracker is ERC721URIStorage, Ownable {
 
     /// @notice This serves as the first step in doing withdraw
     /// @dev This calls the approve meaning the sender can later withdraw
-    function approveTresuryTknWithdraw() external onlyOwner {
-        tokenContract.approve(msg.sender, tresuryBalance());
-    }
+    // function approveTresuryTknWithdraw() external onlyOwner {
+    //     tokenContract.approve(msg.sender, tresuryBalance());
+    // }
 
     /// @notice This serves as a way to withdraw all the accumulated Eth
     /// @dev This could better, as in made to allow the caller to be a contract
-    function withdrawTresuryEth() public onlyOwner {
+    function withdrawTresuryEthAndBurn() public onlyOwner {
         address payable to = payable(msg.sender);
+        tokenContract.approve(address(this), tresuryBalance());
+        tokenContract.burn(address(this), tresuryBalance());
         to.transfer(address(this).balance);
     }
 
