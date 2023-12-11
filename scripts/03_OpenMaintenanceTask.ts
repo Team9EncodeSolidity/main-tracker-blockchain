@@ -12,7 +12,7 @@ let contract: MaintenanceTracker;
 // const clientName = "Gabriel";
 // const systemName = "AIRCRAFT";
 // const maintenanceName = "EngineMaintenance";
-const systemCycles = 1000;
+const systemCycles = "1000";
 // const ipfsHash = "QmaVkBn2tKmjbhphU7eyztbvSQU5EXDdqRyXZtRhSGgJGo";
 
 const estimatedTime = 3 * 24 * 60 * 60;
@@ -104,8 +104,8 @@ async function main() {
     maintenanceName,
     systemCycles,
     // ipfsHash,
-    estimatedTime,
-    startingTime,
+    estimatedTime.toString(),
+    startingTime.toString(),
     cost,
     repairman,
     qualityInspector
