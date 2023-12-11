@@ -5,7 +5,7 @@ dotenv.config();
 export function getProvider(){
     return new ethers.JsonRpcProvider(
         process.env.RPC_ENDPOINT_URL ?? ""
-      );
+    );
 }
 
 export function getWallet(provider:ethers.JsonRpcProvider){
@@ -18,5 +18,5 @@ export function getWallet(provider:ethers.JsonRpcProvider){
 export function getMyTokenContractAddress(){
     return (
         process.env.MYTOKEN_CONTRACT_ADDRESS ?? ""
-      );
+    );
 }
