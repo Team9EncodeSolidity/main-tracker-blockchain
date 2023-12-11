@@ -41,7 +41,6 @@ async function main() {
   const balance = Number(ethers.formatUnits(balanceBN));
   console.log(`Wallet balance ${balance} ETH`);
 
-  const balEthBefore = await provider.getBalance(TrackerContractAddress);
   const contractFactory = new MaintenanceTracker__factory(wallet);
   contract = contractFactory.attach(TrackerContractAddress) as MaintenanceTracker;
 
