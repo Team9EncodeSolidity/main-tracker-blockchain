@@ -111,7 +111,7 @@ contract MaintenanceTracker is ERC721URIStorage, Ownable {
         uint256 _cost,
         address _repairman,
         address _qualityInspector
-    ) external onlyOwner returns (uint256)
+    ) external returns (uint256)
     {
         uint256 newTokenId = tokenIdCounter.current();
         tokenIdCounter.increment();
@@ -207,7 +207,7 @@ contract MaintenanceTracker is ERC721URIStorage, Ownable {
                     abi.encodePacked(
                         '{"name": "Maintenance Certificate",',
                         '"description": "This digital certificate serves as authentic evidence that the specified maintenance operations were performed under specific conditions",',
-                        '"external_url": "', "https://www.encode.club/", '",',
+                        '"external_url": "', _ipfsHash, '",',
                         '"image": "', _nftImageIpfsHash, '",',
                         '"attributes": [',
                             '{"trait_type": "clientName",',
