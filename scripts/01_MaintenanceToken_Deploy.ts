@@ -1,11 +1,11 @@
 import { ethers } from "hardhat";
-import * as dotenv from "dotenv";
-import { 
-          MaintenanceToken__factory, 
-          MaintenanceToken, 
+// import * as dotenv from "dotenv";
+import {
+          MaintenanceToken__factory,
+          MaintenanceToken,
         } from "../typechain-types";
 import { getProvider, getWallet } from "./Helpers";
-dotenv.config();
+// dotenv.config();
 
 let contract: MaintenanceToken;
 
@@ -13,9 +13,9 @@ async function main() {
     console.log(`START\n`);
 
     //receiving parameters
-    const parameters = process.argv.slice(2);
-    if (!parameters || parameters.length < 0)
-      throw new Error("Proposals not provided");
+    // const parameters = process.argv.slice(2);
+    // if (!parameters || parameters.length < 0)
+    //   throw new Error("Proposals not provided");
     // const myTokenContractAddress = parameters[0];
 
     // const proposals = process.argv.slice(3);
@@ -34,16 +34,16 @@ async function main() {
     const lastBlockTimestamp = lastBlock?.timestamp ?? 0;
     const lastBlockDate = new Date(lastBlockTimestamp * 1000);
     console.log(
-      `Last block timestamp: ${lastBlockTimestamp} (${lastBlockDate.toLocaleDateString()} ${lastBlockDate.toLocaleTimeString()})`
+        `Last block timestamp: ${lastBlockTimestamp} (${lastBlockDate.toLocaleDateString()} ${lastBlockDate.toLocaleTimeString()})`
     );
 
-    //configuring the wallet 
+    //configuring the wallet
     const wallet = getWallet(provider);
     const balanceBN = await provider.getBalance(wallet.address);
     const balance = Number(ethers.formatUnits(balanceBN));
     console.log(`Wallet balance ${balance} ETH`);
     if (balance < 0.01) {
-      throw new Error("Not enough ether");
+        throw new Error("Not enough ether");
     }
 
     //deploying the smart contract using Typechain

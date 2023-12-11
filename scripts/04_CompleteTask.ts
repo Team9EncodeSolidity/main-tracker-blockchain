@@ -1,17 +1,17 @@
 import { ethers } from "hardhat";
-import * as dotenv from "dotenv";
-import { 
-          MaintenanceTracker__factory, 
-          MaintenanceTracker, 
+// import * as dotenv from "dotenv";
+import {
+          MaintenanceTracker__factory,
+          MaintenanceTracker,
         } from "../typechain-types";
 import { getProvider, getWallet } from "./Helpers";
-dotenv.config();
+// dotenv.config();
 
 let contract: MaintenanceTracker;
 
-const BET_PRICE = 1;
-const BET_FEE = 0.2;
-const TOKEN_RATIO = 1n;
+// const BET_PRICE = 1;
+// const BET_FEE = 0.2;
+// const TOKEN_RATIO = 1n;
 
 async function main() {
     console.log(`START\n`);
@@ -19,7 +19,7 @@ async function main() {
     //receiving parameters
     const parameters = process.argv.slice(2);
     if (!parameters || parameters.length < 2)
-      throw new Error("Proposals not provided");
+      throw new Error("Maintenance SC's Address and TokenId must be provided");
     const TrackerContractAddress = parameters[0];
     const tokenId = parameters[1];
 
@@ -37,7 +37,7 @@ async function main() {
       `Last block timestamp: ${lastBlockTimestamp} (${lastBlockDate.toLocaleDateString()} ${lastBlockDate.toLocaleTimeString()})`
     );
 
-    //configuring the wallet 
+    //configuring the wallet
     const wallet = getWallet(provider);
     const balanceBN = await provider.getBalance(wallet.address);
     const balance = Number(ethers.formatUnits(balanceBN));
@@ -47,7 +47,7 @@ async function main() {
     }
 
     const contractFactory = new MaintenanceTracker__factory(wallet);
-    contract = await contractFactory.attach(TrackerContractAddress) as MaintenanceTracker;
+    contract = contractFactory.attach(TrackerContractAddress) as MaintenanceTracker;
     await contract.completeTask(tokenId);
 
     console.log(`Maintenance task completed for tokenId: ${tokenId} successfully`);

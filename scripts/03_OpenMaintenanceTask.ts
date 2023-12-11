@@ -1,37 +1,39 @@
 import { ethers } from "hardhat";
-import * as dotenv from "dotenv";
+// import * as dotenv from "dotenv";
 import {
   MaintenanceTracker__factory,
   MaintenanceTracker,
 } from "../typechain-types";
 import { getProvider, getWallet } from "./Helpers";
-dotenv.config();
+// dotenv.config();
 
 let contract: MaintenanceTracker;
 
-// const clientName = "Javier Montes";
+// const clientName = "Gabriel";
 // const systemName = "AIRCRAFT";
-const maintenanceName = "ITP";
+// const maintenanceName = "EngineMaintenance";
 const systemCycles = 1000;
-const ipfsHash = "QmaVkBn2tKmjbhphU7eyztbvSQU5EXDdqRyXZtRhSGgJGo";
+// const ipfsHash = "QmaVkBn2tKmjbhphU7eyztbvSQU5EXDdqRyXZtRhSGgJGo";
 
 const estimatedTime = 3 * 24 * 60 * 60;
 const startingTime = Math.floor(new Date().getTime() / 1000);
 
-const cost = 1;
-let repairman;
-let qualityInspector;
+const costInTokens = 1
+const cost = ethers.parseUnits(costInTokens.toString());
+let repairman: any;
+let qualityInspector: any;
 
 async function main() {
   console.log(`START\n`);
 
   //receiving parameters
   const parameters = process.argv.slice(2);
-  if (!parameters || parameters.length < 3)
-    throw new Error("SC's Address not provided");
+  if (!parameters || parameters.length < 4)
+    throw new Error("Maintenance SC's Address, clientName, sysName and maintenanceName must be provided");
   const MaintenanceTokenContractAddress = parameters[0];
   const clientName = parameters[1];
-  const systemName = parameters[2]; 
+  const systemName = parameters[2];
+  const maintenanceName = parameters[3];
 
   console.log(
     `MaintenanceToken contract address: ${MaintenanceTokenContractAddress}. `
@@ -41,6 +43,24 @@ async function main() {
   );
   console.log(
     `System name: ${systemName}. `
+  );
+  console.log(
+    `Maintenance name: ${maintenanceName}. `
+  );
+  console.log(
+    `System cycles number: ${systemCycles}. `
+  );
+  console.log(
+    `Estimated time: ${estimatedTime}. `
+  );
+  console.log(
+    `Starting time: ${startingTime}. `
+  );
+  console.log(
+    `Repairman address set to: self address. `
+  );
+  console.log(
+    `QualityInspector address set to: self address. `
   );
 
   //inspecting data from public blockchains using RPC connections (configuring the provider)
@@ -76,14 +96,14 @@ async function main() {
   });
 
   repairman = wallet.address;
-  qualityInspector  =wallet.address;
-  
+  qualityInspector = wallet.address;
+
   const tx = await contract.openMaintenanceTask(
     clientName,
     systemName,
     maintenanceName,
     systemCycles,
-    ipfsHash,
+    // ipfsHash,
     estimatedTime,
     startingTime,
     cost,

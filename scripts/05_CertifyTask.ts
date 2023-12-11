@@ -1,17 +1,17 @@
 import { ethers } from "hardhat";
-import * as dotenv from "dotenv";
-import { 
-          MaintenanceTracker__factory, 
-          MaintenanceTracker, 
+// import * as dotenv from "dotenv";
+import {
+          MaintenanceTracker__factory,
+          MaintenanceTracker,
         } from "../typechain-types";
 import { getProvider, getWallet } from "./Helpers";
-dotenv.config();
+// dotenv.config();
 
 let contract: MaintenanceTracker;
 
-const BET_PRICE = 1;
-const BET_FEE = 0.2;
-const TOKEN_RATIO = 1n;
+// const BET_PRICE = 1;
+// const BET_FEE = 0.2;
+// const TOKEN_RATIO = 1n;
 
 async function main() {
     console.log(`START\n`);
@@ -19,7 +19,7 @@ async function main() {
     //receiving parameters
     const parameters = process.argv.slice(2);
     if (!parameters || parameters.length < 2)
-      throw new Error("Proposals not provided");
+      throw new Error("Maintenance SC's Address and TokenId must be provided");
     const TrackerContractAddress = parameters[0];
     const tokenId = parameters[1];
 
@@ -50,7 +50,7 @@ async function main() {
     contract = await contractFactory.attach(TrackerContractAddress) as MaintenanceTracker;
     await contract.certifyTask(tokenId);
 
-    console.log(`Maintenance task certifyed for tokenId: ${tokenId} successfully`);
+    console.log(`Maintenance task certified for tokenId: ${tokenId} successfully`);
     console.log('END');
 }
 

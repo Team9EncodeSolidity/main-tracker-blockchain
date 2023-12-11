@@ -1,17 +1,17 @@
 import { ethers } from "hardhat";
-import * as dotenv from "dotenv";
-import { 
-          MaintenanceToken__factory, 
-          MaintenanceToken, 
+// import * as dotenv from "dotenv";
+import {
+          MaintenanceToken__factory,
+          MaintenanceToken,
         } from "../typechain-types";
 import { getProvider, getWallet } from "./Helpers";
-dotenv.config();
+// dotenv.config();
 
 let contract: MaintenanceToken;
 
-const BET_PRICE = 1;
-const BET_FEE = 0.2;
-const TOKEN_RATIO = 1n;
+// const BET_PRICE = 1;
+// const BET_FEE = 0.2;
+// const TOKEN_RATIO = 1n;
 
 async function main() {
     console.log(`START\n`);
@@ -19,7 +19,7 @@ async function main() {
     //receiving parameters
     const parameters = process.argv.slice(2);
     if (!parameters || parameters.length < 3)
-      throw new Error("Proposals not provided");
+      throw new Error("Maintenance SC's Address, Token SC's Address and Amount not provided");
     const TokenContractAddress = parameters[0];
     const TrackerContractAddress = parameters[1];
     const amount = parameters[2];
@@ -27,7 +27,7 @@ async function main() {
     console.log(`MaintenanceToken contract address: ${TokenContractAddress}. `);
     console.log(`MaintenanceTracker contract address: ${TrackerContractAddress}. `);
     console.log(`Amount to approve: ${amount}. `);
-    
+
     //inspecting data from public blockchains using RPC connections (configuring the provider)
     const provider = getProvider();
     const lastBlock = await provider.getBlock("latest");
@@ -39,7 +39,7 @@ async function main() {
       `Last block timestamp: ${lastBlockTimestamp} (${lastBlockDate.toLocaleDateString()} ${lastBlockDate.toLocaleTimeString()})`
     );
 
-    //configuring the wallet 
+    //configuring the wallet
     const wallet = getWallet(provider);
     const balanceBN = await provider.getBalance(wallet.address);
     const balance = Number(ethers.formatUnits(balanceBN));
@@ -49,7 +49,7 @@ async function main() {
     }
 
     const contractFactory = new MaintenanceToken__factory(wallet);
-    contract = await contractFactory.attach(TokenContractAddress) as MaintenanceToken;
+    contract = contractFactory.attach(TokenContractAddress) as MaintenanceToken;
     await contract.approve(TrackerContractAddress, ethers.parseUnits(amount));
 
     console.log(`Approval of ${amount} MaintenanceTokens to ${TrackerContractAddress} address executed successfully`);
