@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.20;
-
+pragma solidity 0.8.19;
 
 // Importing OpenZeppelin contracts
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
@@ -8,9 +7,14 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 
+// Special versioned imports ( usefull when testing using Remix )
+// import "@openzeppelin/contracts@v4.9.5/token/ERC721/extensions/ERC721URIStorage.sol";
+// import "@openzeppelin/contracts@v4.9.5/access/Ownable.sol";
+// import "@openzeppelin/contracts@v4.9.5/utils/Counters.sol";
+// import "@openzeppelin/contracts@v4.9.5/utils/Base64.sol";
 
 // Importing Chainlink contracts
-import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+// import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 import "./MaintenanceToken.sol";
 
@@ -21,23 +25,23 @@ contract MaintenanceTracker is ERC721URIStorage, Ownable {
     Counters.Counter public tokenIdCounter;
 
     // Create price feed
-    AggregatorV3Interface internal priceFeed;
-    uint256 public lastPrice = 0;
+    // AggregatorV3Interface internal priceFeed;
+    // uint256 public lastPrice = 0;
 
-    string public priceIndicator;
+    // string public priceIndicator;
 
-/// @notice Amount of tokens given per ETH paid
+    /// @notice Amount of tokens given per ETH paid
     uint256 public purchaseRatio;
 
     enum TaskStatus { InProgress, CompletedUnpaid, CompletedPaid }
     enum ExecutionStatus { None, CompletedByRepairman, CertifiedByQualityInspector }
 
-struct MaintenanceTask {
+    struct MaintenanceTask {
         string clientName;
         string systemName;
         string maintenanceName;
         uint256 systemCycles;
-        string ipfsHash;
+        // string ipfsHash;
         uint256 estimatedTime;
         uint256 startTime;
         uint256 cost;
@@ -69,11 +73,11 @@ struct MaintenanceTask {
         tokenContract = MaintenanceToken(_tokenContractAddress);
         purchaseRatio = _purchaseRatio;
 
-        //https://docs.chain.link/data-feeds/price-feeds/addresses        
-        priceFeed = AggregatorV3Interface(
-            // Sepolia BTC/USD
-            0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43  
-        );
+        //https://docs.chain.link/data-feeds/price-feeds/addresses
+        // priceFeed = AggregatorV3Interface(
+        //     // Sepolia BTC/USD
+        //     0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
+        // );
     }
 
     modifier onlyRepairman(uint256 tokenId) {
@@ -101,13 +105,13 @@ struct MaintenanceTask {
         string memory _systemName,
         string memory _maintenanceName,
         uint256 _systemCycles,
-        string memory _ipfsHash,
+        // string memory _ipfsHash,
         uint256 _estimatedTime,
         uint256 _startTime,
         uint256 _cost,
         address _repairman,
         address _qualityInspector
-    ) external onlyOwner returns (uint256) 
+    ) external onlyOwner returns (uint256)
     {
         uint256 newTokenId = tokenIdCounter.current();
         tokenIdCounter.increment();
@@ -117,7 +121,7 @@ struct MaintenanceTask {
             systemName: _systemName,
             maintenanceName: _maintenanceName,
             systemCycles: _systemCycles,
-            ipfsHash: _ipfsHash,
+            // ipfsHash: _ipfsHash,
             estimatedTime: _estimatedTime,
             startTime: _startTime,
             cost: _cost,
@@ -127,21 +131,21 @@ struct MaintenanceTask {
             qualityInspector: _qualityInspector
         });
 
-        emit MaintenanceTaskOpened(newTokenId); 
+        emit MaintenanceTaskOpened(newTokenId);
         return (newTokenId);
-        
+
     }
 
-    function completeTask(uint256 tokenId) 
-        external onlyRepairman(tokenId) taskInProgress(tokenId) 
+    function completeTask(uint256 tokenId)
+        external onlyRepairman(tokenId) taskInProgress(tokenId)
     {
         emit TaskCertified(tokenId, msg.sender);
         maintenanceTasks[tokenId].executionStatus = ExecutionStatus.CompletedByRepairman;
         // The general status remains "InProgress" until payment is made
     }
 
-    function certifyTask(uint256 tokenId) 
-        external onlyQualityInspector(tokenId) taskInProgress(tokenId) 
+    function certifyTask(uint256 tokenId)
+        external onlyQualityInspector(tokenId) taskInProgress(tokenId)
     {
         emit TaskCertified(tokenId, msg.sender);
         maintenanceTasks[tokenId].executionStatus = ExecutionStatus.CertifiedByQualityInspector;
@@ -149,17 +153,17 @@ struct MaintenanceTask {
     }
 
     function payForTask(
-        uint256 tokenId, 
-        uint256 _amount, 
-        string memory _ipfsHash, 
+        uint256 tokenId,
+        uint256 _amount,
+        string memory _ipfsHash,
         string memory _nftImageIpfsHash
     ) external taskCompletedUnpaid(tokenId) {
         // Anyone can pay for the task
-        
-        require(bytes(_ipfsHash).length > 0, "Metadata IPFS hash needed");  
+
+        require(bytes(_ipfsHash).length > 0, "Metadata IPFS hash needed");
 
         require(bytes(_nftImageIpfsHash).length > 0, "NFT Image IPFS hash needed");
-        
+
         uint256 taskCost = maintenanceTasks[tokenId].cost;
 
         // Ensure that the caller pays at least the specified cost
@@ -173,7 +177,7 @@ struct MaintenanceTask {
 
         // Mint an NFT certificate for the completed task and transfer it to the payer
         mint(msg.sender, tokenId, _ipfsHash, _nftImageIpfsHash);
-        
+
         // Transfer the specified cost to the owner
         // Before this, the transfer amount needs to be aproved from the backend TokenContract.approve(address spender, uint256 amount)
         tokenContract.transferFrom(msg.sender, address(this), taskCost);
@@ -190,7 +194,7 @@ struct MaintenanceTask {
         // sourceId 0 Sepolia, 1 Fuji, 2 Mumbai
         // uint256 tokenId = tokenIdCounter.current();
         _safeMint(to, tokenId);
-        updateMetaData(tokenId, _ipfsHash, _nftImageIpfsHash);    
+        updateMetaData(tokenId, _ipfsHash, _nftImageIpfsHash);
     }
 
     // Update MetaData
@@ -210,6 +214,16 @@ struct MaintenanceTask {
                             '"value": "', taskData.clientName ,'"},',
                             '{"trait_type": "systemName",',
                             '"value": "', taskData.systemName ,'"}',
+                            '{"trait_type": "maintenanceName",',
+                            '"value": "', taskData.maintenanceName ,'"}',
+                            '{"trait_type": "estimatedTime",',
+                            '"value": "', taskData.estimatedTime ,'"}',
+                            '{"trait_type": "startTime",',
+                            '"value": "', taskData.startTime ,'"}',
+                            '{"trait_type": "repairman",',
+                            '"value": "', taskData.repairman ,'"}',
+                            '{"trait_type": "qualityInspector",',
+                            '"value": "', taskData.qualityInspector ,'"}',
                         ']}'
                     )
                 )
@@ -224,8 +238,8 @@ struct MaintenanceTask {
     }
 
     // Compare new price to previous price
-    function comparePrice() public returns (string memory) {
-        uint256 currentPrice = getChainlinkDataFeedLatestAnswer();
+    // function comparePrice() public returns (string memory) {
+    //     uint256 currentPrice = getChainlinkDataFeedLatestAnswer();
         // if (currentPrice > lastPrice) {
         //     priceIndicator = priceIndicatorUp;
         // } else if (currentPrice < lastPrice) {
@@ -233,15 +247,15 @@ struct MaintenanceTask {
         // } else {
         //     priceIndicator = priceIndicatorFlat;
         // }
-        lastPrice = currentPrice;
-        return priceIndicator;
-    }
+    //     lastPrice = currentPrice;
+    //     return priceIndicator;
+    // }
 
 
-    function getChainlinkDataFeedLatestAnswer() public view returns (uint256) {
-        (, int256 price, , , ) = priceFeed.latestRoundData();
-        return uint256(price);
-    }
+    // function getChainlinkDataFeedLatestAnswer() public view returns (uint256) {
+    //     (, int256 price, , , ) = priceFeed.latestRoundData();
+    //     return uint256(price);
+    // }
 
 
     // The following function is an override required by Solidity.
@@ -265,5 +279,24 @@ struct MaintenanceTask {
     /// @dev This implementation is prone to rounding problems
     function buyTokens() external payable {
         tokenContract.mint(msg.sender, msg.value * purchaseRatio);
+    }
+
+    /// @notice This serves as the first step in doing withdraw
+    /// @dev This calls the approve meaning the sender can later withdraw
+    function approveTresuryTknWithdraw() external onlyOwner {
+        tokenContract.approve(msg.sender, tresuryBalance());
+    }
+
+    /// @notice This serves as a way to withdraw all the accumulated Eth
+    /// @dev This could better, as in made to allow the caller to be a contract
+    function withdrawTresuryEth() public onlyOwner {
+        address payable to = payable(msg.sender);
+        to.transfer(address(this).balance);
+    }
+
+    /// @notice Shows the amount of tokens inside the main tresury
+    /// @dev This can also be viewed directly using the ERC20 balanceOf
+    function tresuryBalance() public view returns(uint256) {
+        return tokenContract.balanceOf(address(this));
     }
 }
