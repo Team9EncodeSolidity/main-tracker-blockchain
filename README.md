@@ -32,6 +32,7 @@ npx ts-node ./scripts/05_CertifyTask.ts $MAIN_CT_ADDR $ID
 npx ts-node ./scripts/06_BuyTokens.ts $MAIN_CT_ADDR 1
 npx ts-node ./scripts/07_TokenApproval.ts $TOKEN_CT_ADDR $MAIN_CT_ADDR 1
 npx ts-node ./scripts/08_PayForTask.ts $MAIN_CT_ADDR $ID
+npx ts-node ./scripts/09_WithdrawTreasury.ts $MAIN_CT_ADDR
 ```
 
 ---
