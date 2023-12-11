@@ -35,4 +35,11 @@ npx ts-node ./scripts/08_PayForTask.ts $MAIN_CT_ADDR $ID
 npx ts-node ./scripts/09_WithdrawTreasury.ts $MAIN_CT_ADDR
 ```
 
+```shell
+# ViewAllTheTasks
+npx ts-node ./scripts/90_QueryMaintenanceTasks.ts $MAIN_CT_ADDR
+# ViewOneSingleNFT
+npx ts-node ./scripts/91_QueryNftMetadata.ts $MAIN_CT_ADDR $ID
+```
+
 ---
