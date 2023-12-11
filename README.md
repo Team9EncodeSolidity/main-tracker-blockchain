@@ -42,4 +42,10 @@ npx ts-node ./scripts/90_QueryMaintenanceTasks.ts $MAIN_CT_ADDR
 npx ts-node ./scripts/91_QueryNftMetadata.ts $MAIN_CT_ADDR $ID
 ```
 
+```shell
+# VerifyContractWith
+npx hardhat verify --network sepolia $TOKEN_CT_ADDR
+npx hardhat verify --network sepolia $MAIN_CT_ADDR $TOKEN_CT_ADDR "1000000000000000000"
+```
+
 ---
