@@ -52,6 +52,7 @@ contract MaintenanceTracker is ERC721URIStorage, Ownable {
     }
 
     mapping(uint256 => MaintenanceTask) public maintenanceTasks;
+    // mapping(uint256 => address) public onProgressTasks;
 
     MaintenanceToken public tokenContract;
 
@@ -186,7 +187,7 @@ contract MaintenanceTracker is ERC721URIStorage, Ownable {
     }
 
 
-    function mint(address to, uint256 tokenId, string memory _ipfsHash, string memory _nftImageIpfsHash) internal {
+    function mint(address to, uint256 tokenId, string memory _ipfsHash, string memory _nftImageIpfsHash) public onlyOwner {
         mintFrom(to, tokenId, _ipfsHash, _nftImageIpfsHash);
     }
 
@@ -213,17 +214,9 @@ contract MaintenanceTracker is ERC721URIStorage, Ownable {
                             '{"trait_type": "clientName",',
                             '"value": "', taskData.clientName ,'"},',
                             '{"trait_type": "systemName",',
-                            '"value": "', taskData.systemName ,'"}',
+                            '"value": "', taskData.systemName ,'"},',
                             '{"trait_type": "maintenanceName",',
-                            '"value": "', taskData.maintenanceName ,'"}',
-                            '{"trait_type": "estimatedTime",',
-                            '"value": "', taskData.estimatedTime ,'"}',
-                            '{"trait_type": "startTime",',
-                            '"value": "', taskData.startTime ,'"}',
-                            '{"trait_type": "repairman",',
-                            '"value": "', taskData.repairman ,'"}',
-                            '{"trait_type": "qualityInspector",',
-                            '"value": "', taskData.qualityInspector ,'"}',
+                            '"value": "', taskData.maintenanceName ,'"}'
                         ']}'
                     )
                 )
@@ -281,24 +274,24 @@ contract MaintenanceTracker is ERC721URIStorage, Ownable {
         tokenContract.mint(msg.sender, msg.value * purchaseRatio);
     }
 
-    /// @notice This serves as the first step in doing withdraw
-    /// @dev This calls the approve meaning the sender can later withdraw
-    // function approveTresuryTknWithdraw() external onlyOwner {
-    //     tokenContract.approve(msg.sender, tresuryBalance());
+    ///// @notice This serves as the first step in doing withdraw
+    ///// @dev This calls the approve meaning the sender can later withdraw
+    // function approveTreasuryTknWithdraw() external onlyOwner {
+    //     tokenContract.approve(msg.sender, treasuryBalance());
     // }
 
     /// @notice This serves as a way to withdraw all the accumulated Eth
     /// @dev This could better, as in made to allow the caller to be a contract
-    function withdrawTresuryEthAndBurn() public onlyOwner {
+    function withdrawTreasuryEthAndBurn() public onlyOwner {
         address payable to = payable(msg.sender);
-        tokenContract.approve(address(this), tresuryBalance());
-        tokenContract.burn(address(this), tresuryBalance());
+        // tokenContract.approve(address(this), treasuryBalance());
+        tokenContract.burn(address(this), treasuryBalance());
         to.transfer(address(this).balance);
     }
 
-    /// @notice Shows the amount of tokens inside the main tresury
+    /// @notice Shows the amount of tokens inside the main treasury
     /// @dev This can also be viewed directly using the ERC20 balanceOf
-    function tresuryBalance() public view returns(uint256) {
+    function treasuryBalance() public view returns(uint256) {
         return tokenContract.balanceOf(address(this));
     }
 }
