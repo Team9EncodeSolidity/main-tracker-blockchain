@@ -40,10 +40,10 @@ contract MaintenanceTracker is ERC721URIStorage, Ownable {
         string clientName;
         string systemName;
         string maintenanceName;
-        uint256 systemCycles;
+        string systemCycles;
         // string ipfsHash;
-        uint256 estimatedTime;
-        uint256 startTime;
+        string estimatedTime;
+        string startTime;
         uint256 cost;
         TaskStatus generalStatus;
         ExecutionStatus executionStatus;
@@ -61,12 +61,12 @@ contract MaintenanceTracker is ERC721URIStorage, Ownable {
     event TaskCompletedPaid(uint256 tokenId, uint256 cost);
     event FundsWithdrawn(uint256 amount);
 
-    struct ChainStruct {
-        uint64 code;
-        string name;
-        string color;
-    }
-    mapping (uint256 => ChainStruct) chain;
+    // struct ChainStruct {
+    //     uint64 code;
+    //     string name;
+    //     string color;
+    // }
+    // mapping (uint256 => ChainStruct) chain;
 
 
     //https://docs.chain.link/ccip/supported-networks/testnet
@@ -105,10 +105,10 @@ contract MaintenanceTracker is ERC721URIStorage, Ownable {
         string memory _clientName,
         string memory _systemName,
         string memory _maintenanceName,
-        uint256 _systemCycles,
+        string memory _systemCycles,
         // string memory _ipfsHash,
-        uint256 _estimatedTime,
-        uint256 _startTime,
+        string memory _estimatedTime,
+        string memory _startTime,
         uint256 _cost,
         address _repairman,
         address _qualityInspector
@@ -198,6 +198,23 @@ contract MaintenanceTracker is ERC721URIStorage, Ownable {
         updateMetaData(tokenId, _ipfsHash, _nftImageIpfsHash);
     }
 
+    // Util Conversoin Function
+    function toAsciiString(address x) internal pure returns (string memory) {
+        bytes memory s = new bytes(40);
+        for (uint i = 0; i < 20; i++) {
+            bytes1 b = bytes1(uint8(uint(uint160(x)) / (2**(8*(19 - i)))));
+            bytes1 hi = bytes1(uint8(b) / 16);
+            bytes1 lo = bytes1(uint8(b) - 16 * uint8(hi));
+            s[2*i] = uint8(hi) < 10 ? bytes1(uint8(hi) + 0x30) : bytes1(uint8(hi) + 0x57);
+            s[2*i+1] = uint8(lo) < 10 ? bytes1(uint8(lo) + 0x30) : bytes1(uint8(lo) + 0x57);
+            // s[2*i] = char(hi);
+            // s[2*i+1] = char(lo);
+        }
+        return string(s);
+    }
+
+    // function char(bytes1 b) internal pure returns (bytes1 c) { return (uint8(b) < 10) ? bytes1(uint8(b) + 0x30) : bytes1(uint8(b) + 0x57); }
+
     // Update MetaData
     function updateMetaData(uint256 tokenId, string memory _ipfsHash, string memory _nftImageIpfsHash) internal {
         MaintenanceTask memory taskData = maintenanceTasks[tokenId];
@@ -216,7 +233,17 @@ contract MaintenanceTracker is ERC721URIStorage, Ownable {
                             '{"trait_type": "systemName",',
                             '"value": "', taskData.systemName ,'"},',
                             '{"trait_type": "maintenanceName",',
-                            '"value": "', taskData.maintenanceName ,'"}'
+                            '"value": "', taskData.maintenanceName ,'"},',
+                            '{"trait_type": "systemCycles",',
+                            '"value": "', taskData.systemCycles ,'"},',
+                            '{"trait_type": "estimatedTime",',
+                            '"value": "', taskData.estimatedTime ,'"},',
+                            '{"trait_type": "startTime",',
+                            '"value": "', taskData.startTime ,'"},',
+                            '{"trait_type": "repairman",',
+                            '"value": "0x', toAsciiString(taskData.repairman) ,'"},',
+                            '{"trait_type": "qualityInspector",',
+                            '"value": "0x', toAsciiString(taskData.qualityInspector) ,'"}'
                         ']}'
                     )
                 )
