@@ -33,7 +33,9 @@ async function main() {
   const MaintenanceTokenContractAddress = parameters[0];
   const clientName = parameters[1];
   const systemName = parameters[2];
-  const maintenanceName = parameters[3];
+  const maintenanceName = "ITP";
+  const systemCycles = 1000;
+  const ipfsHash = "ipfs://QmaVkBn2tKmjbhphU7eyztbvSQU5EXDdqRyXZtRhSGgJGo";
 
   console.log(
     `MaintenanceToken contract address: ${MaintenanceTokenContractAddress}. `
