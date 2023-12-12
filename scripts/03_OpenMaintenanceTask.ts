@@ -15,8 +15,8 @@ let contract: MaintenanceTracker;
 const systemCycles = "1000";
 // const ipfsHash = "QmaVkBn2tKmjbhphU7eyztbvSQU5EXDdqRyXZtRhSGgJGo";
 
-const estimatedTime = 3 * 24 * 60 * 60;
 const startingTime = Math.floor(new Date().getTime() / 1000);
+const estimatedTime = startingTime + 3 * 24 * 60 * 60;
 
 const costInTokens = 1
 const cost = ethers.parseUnits(costInTokens.toString());
