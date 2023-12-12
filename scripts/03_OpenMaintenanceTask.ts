@@ -11,9 +11,9 @@ let contract: MaintenanceTracker;
 
 // const clientName = "Gabriel";
 // const systemName = "AIRCRAFT";
-// const maintenanceName = "EngineMaintenance";
-const systemCycles = "1000";
-// const ipfsHash = "QmaVkBn2tKmjbhphU7eyztbvSQU5EXDdqRyXZtRhSGgJGo";
+const maintenanceName = "EngineMaintenance";
+const systemCycles = 1000;
+const ipfsHash = "QmaVkBn2tKmjbhphU7eyztbvSQU5EXDdqRyXZtRhSGgJGo";
 
 const startingTime = Math.floor(new Date().getTime() / 1000);
 const estimatedTime = startingTime + 3 * 24 * 60 * 60;
@@ -33,9 +33,7 @@ async function main() {
   const MaintenanceTokenContractAddress = parameters[0];
   const clientName = parameters[1];
   const systemName = parameters[2];
-  const maintenanceName = "ITP";
-  const systemCycles = 1000;
-  const ipfsHash = "ipfs://QmaVkBn2tKmjbhphU7eyztbvSQU5EXDdqRyXZtRhSGgJGo";
+  const maintenanceName = parameters[3];
 
   console.log(
     `MaintenanceToken contract address: ${MaintenanceTokenContractAddress}. `
