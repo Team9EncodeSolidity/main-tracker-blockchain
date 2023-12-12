@@ -187,7 +187,7 @@ contract MaintenanceTracker is ERC721URIStorage, Ownable {
     }
 
 
-    function mint(address to, uint256 tokenId, string memory _ipfsHash, string memory _nftImageIpfsHash) internal onlyOwner {
+    function mint(address to, uint256 tokenId, string memory _ipfsHash, string memory _nftImageIpfsHash) internal {
         mintFrom(to, tokenId, _ipfsHash, _nftImageIpfsHash);
     }
 
