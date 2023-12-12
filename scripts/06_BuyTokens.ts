@@ -1,17 +1,17 @@
 import { ethers } from "hardhat";
-import * as dotenv from "dotenv";
-import { 
-          MaintenanceTracker__factory, 
-          MaintenanceTracker, 
+// import * as dotenv from "dotenv";
+import {
+          MaintenanceTracker__factory,
+          MaintenanceTracker,
         } from "../typechain-types";
 import { getProvider, getWallet } from "./Helpers";
-dotenv.config();
+// dotenv.config();
 
 let contract: MaintenanceTracker;
 
-const BET_PRICE = 1;
-const BET_FEE = 0.2;
-const TOKEN_RATIO = 1n;
+// const BET_PRICE = 1;
+// const BET_FEE = 0.2;
+// const TOKEN_RATIO = 1n;
 
 async function main() {
     console.log(`START\n`);
@@ -19,13 +19,13 @@ async function main() {
     //receiving parameters
     const parameters = process.argv.slice(2);
     if (!parameters || parameters.length < 2)
-      throw new Error("Some parameters not provided");
+      throw new Error("Maintenance SC's Address and Amount not provided");
     const TrackerContractAddress = parameters[0];
     const amount = parameters[1];
 
     console.log(`MaintenanceTracker contract address: ${TrackerContractAddress}. `);
     console.log(`Amount to buy: ${amount}. `);
-    
+
     //inspecting data from public blockchains using RPC connections (configuring the provider)
     const provider = getProvider();
     const lastBlock = await provider.getBlock("latest");
@@ -37,7 +37,7 @@ async function main() {
       `Last block timestamp: ${lastBlockTimestamp} (${lastBlockDate.toLocaleDateString()} ${lastBlockDate.toLocaleTimeString()})`
     );
 
-    //configuring the wallet 
+    //configuring the wallet
     const wallet = getWallet(provider);
     const balanceBN = await provider.getBalance(wallet.address);
     const balance = Number(ethers.formatUnits(balanceBN));
@@ -47,13 +47,14 @@ async function main() {
     }
 
     const contractFactory = new MaintenanceTracker__factory(wallet);
-    contract = await contractFactory.attach(TrackerContractAddress) as MaintenanceTracker;
+    contract = contractFactory.attach(TrackerContractAddress) as MaintenanceTracker;
+    console.log(`With the default ration of 10^17 the price will start at 1 Token per wei.`);
     await contract.buyTokens({
-      value: ethers.parseUnits(amount) / BigInt(1000000),
+      value: ethers.parseUnits(amount) / BigInt(1000000000000000000n),
     });
 
     console.log(`Purchase of ${amount} MaintenanceTokens
-     for ${wallet.address} address executed successfully`);
+      for ${wallet.address} address executed successfully`);
     console.log('END');
 }
 

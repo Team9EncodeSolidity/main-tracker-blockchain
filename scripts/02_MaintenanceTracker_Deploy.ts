@@ -1,15 +1,15 @@
 import { ethers } from "hardhat";
-import * as dotenv from "dotenv";
-import { 
-          MaintenanceToken__factory, 
-          MaintenanceToken, 
-          MaintenanceTracker__factory, 
+// import * as dotenv from "dotenv";
+import {
+          MaintenanceToken__factory,
+          MaintenanceToken,
+          MaintenanceTracker__factory,
           MaintenanceTracker,
         } from "../typechain-types";
 import { getProvider, getWallet } from "./Helpers";
-dotenv.config();
+// dotenv.config();
 
-let trackercontract: MaintenanceTracker;
+let trackerContract: MaintenanceTracker;
 let tokenContract: MaintenanceToken;
 
 async function main() {
@@ -18,11 +18,11 @@ async function main() {
     //receiving parameters
     const parameters = process.argv.slice(2);
     if (!parameters || parameters.length < 1)
-      throw new Error("Proposals not provided");
+      throw new Error("TokenContractAddress not provided");
     const TokenContractAddress = parameters[0];
 
     console.log(`MaintenanceToken contract address: ${TokenContractAddress}. `);
-    
+
     //inspecting data from public blockchains using RPC connections (configuring the provider)
     const provider = getProvider();
     const lastBlock = await provider.getBlock("latest");
@@ -34,7 +34,7 @@ async function main() {
       `Last block timestamp: ${lastBlockTimestamp} (${lastBlockDate.toLocaleDateString()} ${lastBlockDate.toLocaleTimeString()})`
     );
 
-    //configuring the wallet 
+    //configuring the wallet
     const wallet = getWallet(provider);
     const balanceBN = await provider.getBalance(wallet.address);
     const balance = Number(ethers.formatUnits(balanceBN));
@@ -45,9 +45,9 @@ async function main() {
 
     //deploying the smart contract using Typechain
     const trackerContractFactory = new MaintenanceTracker__factory(wallet);
-    trackercontract = await trackerContractFactory.deploy(TokenContractAddress, 1000000);
-    await trackercontract.waitForDeployment();
-    const trackerContractAddress = trackercontract.target;
+    trackerContract = await trackerContractFactory.deploy(TokenContractAddress, '1000000000000000000');
+    await trackerContract.waitForDeployment();
+    const trackerContractAddress = trackerContract.target;
     console.log(`Tracker contract deployed to ${trackerContractAddress}`);
 
     //granting mint role to the deployed tracker contract over the token contract
@@ -55,7 +55,7 @@ async function main() {
     tokenContract = await tokenContractFactory.attach(TokenContractAddress) as MaintenanceToken;
     await tokenContract.grantMint(trackerContractAddress);
     console.log(`Mint granted to ${trackerContractAddress} over ${TokenContractAddress} token successfully\n`);
-    
+
     console.log('END');
 }
 
