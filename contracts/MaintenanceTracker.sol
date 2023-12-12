@@ -233,20 +233,7 @@ contract MaintenanceTracker is ERC721URIStorage, Ownable {
                             '{"trait_type": "systemName",',
                             '"value": "', taskData.systemName ,'"},',
                             '{"trait_type": "maintenanceName",',
-                            '"value": "', taskData.maintenanceName ,'"},',
-                            '{"display_type": "boost_number",',
-                            '"trait_type": "systemCycles",',
-                            '"value": ', taskData.systemCycles ,'},',
-                            '{"display_type": "date",',
-                            '"trait_type": "1. startTime",',
-                            '"value": ', taskData.startTime ,'},',
-                            '{"display_type": "date",',
-                            '"trait_type": "2. estimatedTime",',
-                            '"value": "', taskData.estimatedTime ,'"},',
-                            '{"trait_type": "repairman",',
-                            '"value": "0x', toAsciiString(taskData.repairman) ,'"},',
-                            '{"trait_type": "qualityInspector",',
-                            '"value": "0x', toAsciiString(taskData.qualityInspector) ,'"}'
+                            '"value": "', taskData.maintenanceName ,'"}'
                         ']}'
                     )
                 )
