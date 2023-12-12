@@ -18,13 +18,11 @@ async function main() {
 
     //receiving parameters
     const parameters = process.argv.slice(2);
-    if (!parameters || parameters.length < 2)
-      throw new Error("Maintenance SC's Address and TokenId must be provided");
+    if (!parameters || parameters.length < 1)
+      throw new Error("Maintenance SC's Address not provided");
     const TrackerContractAddress = parameters[0];
-    const tokenId = parameters[1];
 
-    console.log(`MaintenanceToken contract address: ${TrackerContractAddress}. `);
-    console.log(`TokenId: ${tokenId}. `);
+    console.log(`MaintenanceTracker contract address: ${TrackerContractAddress}. `);
 
     //inspecting data from public blockchains using RPC connections (configuring the provider)
     const provider = getProvider();
@@ -46,11 +44,20 @@ async function main() {
       throw new Error("Not enough ether");
     }
 
+    const balEthBefore = await provider.getBalance(TrackerContractAddress);
     const contractFactory = new MaintenanceTracker__factory(wallet);
-    contract = await contractFactory.attach(TrackerContractAddress) as MaintenanceTracker;
-    await contract.certifyTask(tokenId);
+    contract = contractFactory.attach(TrackerContractAddress) as MaintenanceTracker;
+    const balBefore = await contract.treasuryBalance();
+    console.log(`The ETH balance of MaintenanceTracker before TX is ${balEthBefore.toString()} ETH`);
+    console.log(`The balance of MaintenanceTracker before TX is ${balBefore.toString()} MTT`);
+    const tx = await contract.withdrawTreasuryEthAndBurn();
+    await tx.wait();
 
-    console.log(`Maintenance task certified for tokenId: ${tokenId} successfully`);
+    const balEthAfter = await provider.getBalance(TrackerContractAddress);
+    const balAfter = await contract.treasuryBalance();
+    console.log(`The ETH balance of MaintenanceTracker after TX is ${balEthAfter.toString()} ETH`);
+    console.log(`The balance of MaintenanceTracker after TX is ${balAfter.toString()} MTT`);
+
     console.log('END');
 }
 

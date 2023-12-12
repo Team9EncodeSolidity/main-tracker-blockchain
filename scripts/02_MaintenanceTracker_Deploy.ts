@@ -52,7 +52,7 @@ async function main() {
 
     //granting mint role to the deployed tracker contract over the token contract
     const tokenContractFactory = new MaintenanceToken__factory(wallet);
-    tokenContract = await tokenContractFactory.attach(TokenContractAddress) as MaintenanceToken;
+    tokenContract = tokenContractFactory.attach(TokenContractAddress) as MaintenanceToken;
     await tokenContract.grantMint(trackerContractAddress);
     console.log(`Mint granted to ${trackerContractAddress} over ${TokenContractAddress} token successfully\n`);
 

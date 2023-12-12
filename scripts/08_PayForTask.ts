@@ -54,7 +54,7 @@ async function main() {
     const tx = await contract.payForTask(
                       tokenId,
                       ethers.parseUnits("1"), // _cost
-                      "https://ipfs.io/ipfs/QmWhjsvCShTtoKHVTATVUZ359qn4q9EHQQXUErPLzpvChz#externalLink", // _ipfsHash
+                      "https://www.encode.club/solidity-bootcamps", // THIS WILL BE STATIC ( CAN BE REMOVED LATER )
                       IPFS_IMAGE_URI // _nftImageIpfsHash
                     );
 
